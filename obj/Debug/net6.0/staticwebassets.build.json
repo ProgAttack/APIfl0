@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "OQsyQnguE4FtCTUZw5nmdmm5YbrF5cZIGtt3CuWhmqM=",
+  "Source": "InfobarAPI",
+  "BasePath": "_content/InfobarAPI",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
