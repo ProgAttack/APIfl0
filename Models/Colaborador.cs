@@ -10,6 +10,7 @@ namespace InfobarAPI.Models
         [Key]
         public int IdCol { get; set; }
         public string Nome { get; set; }
+        public string Cargo { get; set; }
         [Required]
         public string Credencial { get; set; } 
         [Required]

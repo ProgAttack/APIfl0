@@ -36,10 +36,10 @@ namespace InfobarAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Produto>> GetProduto(int id)
         {
-          if (_context.Produtos == null)
-          {
-              return NotFound();
-          }
+            if (_context.Produtos == null)
+            {
+                return NotFound();
+            }
             var produto = await _context.Produtos.FindAsync(id);
 
             if (produto == null)
@@ -48,6 +48,21 @@ namespace InfobarAPI.Controllers
             }
 
             return produto;
+        }
+
+        [HttpGet("{codigo}")] //Conversar com a Prof. Juliana
+        public async Task<ActionResult<IEnumerable<ScannerProduto>>> GetProdutosCodigo(string codigo)
+        {
+            var produtos = await _context.Produtos
+                .Where(p => p.CodBarras == codigo)
+                .ToListAsync();
+
+            if (produtos == null || !produtos.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(produtos);//status 500
         }
 
         // PUT: api/Produtos/5
@@ -190,6 +205,33 @@ namespace InfobarAPI.Controllers
             return NoContent();
         }
 
+        [HttpDelete("DeleteProd{id}")]
+        public async Task<IActionResult> DeleteProd(int id)
+        {
+            if (_context.Produtos == null)
+            {
+                return NotFound();
+            }
+            var produto = await _context.Produtos.FindAsync(id);
+            if (produto == null)
+            {
+                return NotFound();
+            }
+
+            var deletedProduto = new
+            {
+                IdProd = produto.IdProd,
+                NomeProd = produto.NomeProd,
+                Preco = produto.Preco,
+                CodBarras = produto.CodBarras,
+                Quantidade = produto.Quantidade,
+            };
+
+            _context.Produtos.Remove(produto);
+            await _context.SaveChangesAsync();
+
+            return Ok(deletedProduto);
+        }
         private bool ProdutoExists(int id)
         {
             return (_context.Produtos?.Any(e => e.IdProd == id)).GetValueOrDefault();

@@ -29,7 +29,10 @@ namespace InfobarAPI.Controllers
             {
                 return NotFound();
             }
-            return await _context.Colaboradores.ToListAsync();
+
+            var colaboradores =  await _context.Colaboradores.ToListAsync();
+
+            return colaboradores;
         }
 
         // GET: api/Colaboradores/5
@@ -100,6 +103,7 @@ namespace InfobarAPI.Controllers
 
             // Atualize as propriedades do item existente com as do novo item
             itemExistente.Nome = model.Nome;
+            itemExistente.Cargo = model.Cargo;
             itemExistente.Credencial = model.Credencial;
             itemExistente.Senha = model.Senha;
             itemExistente.Email = model.Email;
@@ -133,6 +137,7 @@ namespace InfobarAPI.Controllers
             var colaborador = new Colaborador
             {
                 Nome = model.Nome,
+                Cargo = model.Cargo,
                 Credencial = model.Credencial,
                 Senha = model.Senha,
                 Email = model.Email,
@@ -147,7 +152,7 @@ namespace InfobarAPI.Controllers
 
 
         // DELETE: api/Colaboradores/5
-        [HttpDelete("{id}")]
+        /*[HttpDelete("{id}")]
         public async Task<IActionResult> DeleteColaborador(int id)
         {
             if (_context.Colaboradores == null)
@@ -164,8 +169,38 @@ namespace InfobarAPI.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }
+        }*/
 
+        
+        [HttpDelete("DeleteCol{id}")]
+        public async Task<IActionResult> DeleteColaborador(int id)
+        {
+            if (_context.Colaboradores == null)
+            {
+                return NotFound();
+            }
+            var colaborador = await _context.Colaboradores.FindAsync(id);
+            if (colaborador == null)
+            {
+                return NotFound();
+            }
+
+            var deletedColaborador = new
+            {
+                IdCol = colaborador.IdCol,
+                Nome = colaborador.Nome,
+                Cargo = colaborador.Cargo,
+                Credencial = colaborador.Credencial,
+                Senha = colaborador.Senha,
+                Email = colaborador.Email,
+                DataNascimento = colaborador.DataNascimento,
+            };
+
+            _context.Colaboradores.Remove(colaborador);
+            await _context.SaveChangesAsync();
+
+            return Ok(deletedColaborador);
+        }
         private bool ColaboradorExists(int id)
         {
             return (_context.Colaboradores?.Any(e => e.IdCol == id)).GetValueOrDefault();
