@@ -84,7 +84,7 @@ namespace InfobarAPI.Controllers
             return NoContent();
         }
 
-        [HttpPut("EditColaborador{id}")]
+        [HttpPut("EditColaborador/{id}")]
         public async Task<IActionResult> PutColaborador(int id, ColaboradorInputModel model)
         {
 
@@ -172,7 +172,7 @@ namespace InfobarAPI.Controllers
         }*/
 
         
-        [HttpDelete("DeleteCol{id}")]
+        [HttpDelete("DeleteCol/{id}")]
         public async Task<IActionResult> DeleteColaborador(int id)
         {
             if (_context.Colaboradores == null)

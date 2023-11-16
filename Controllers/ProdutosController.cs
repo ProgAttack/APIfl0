@@ -25,10 +25,10 @@ namespace InfobarAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Produto>>> GetProdutos()
         {
-          if (_context.Produtos == null)
-          {
-              return NotFound();
-          }
+            if (_context.Produtos == null)
+            {
+                return NotFound();
+            }
             return await _context.Produtos.ToListAsync();
         }
 
@@ -50,8 +50,8 @@ namespace InfobarAPI.Controllers
             return produto;
         }
 
-        [HttpGet("{codigo}")] //Conversar com a Prof. Juliana
-        public async Task<ActionResult<IEnumerable<ScannerProduto>>> GetProdutosCodigo(string codigo)
+        [HttpGet("CodBarras/{codigo}")]
+        public async Task<ActionResult<IEnumerable<ScannerProduto>>> GetProdutosByCodigo(string codigo)
         {
             var produtos = await _context.Produtos
                 .Where(p => p.CodBarras == codigo)
@@ -62,8 +62,9 @@ namespace InfobarAPI.Controllers
                 return NotFound();
             }
 
-            return Ok(produtos);//status 500
+            return Ok(produtos);
         }
+
 
         // PUT: api/Produtos/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
@@ -96,7 +97,7 @@ namespace InfobarAPI.Controllers
             return NoContent();
         }
 
-        [HttpPut("EditProdutoGeral{id}")]
+        [HttpPut("EditProdutoGeral/{id}")]
         public async Task<IActionResult> PutProduto(int id, ProdutoInputModel model)
         {
 
@@ -124,7 +125,7 @@ namespace InfobarAPI.Controllers
 
         }
 
-        [HttpPut("EditProdutoQuantidade{id}")]
+        [HttpPut("EditProdutoQuantidade/{id}")]
         public async Task<IActionResult> PutEstoque(int id, Estoque model)
         {
 
@@ -184,7 +185,6 @@ namespace InfobarAPI.Controllers
             return CreatedAtAction("GetProduto", new { id = produto.IdProd }, produto);
         }
 
-
         // DELETE: api/Produtos/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProduto(int id)
@@ -205,7 +205,7 @@ namespace InfobarAPI.Controllers
             return NoContent();
         }
 
-        [HttpDelete("DeleteProd{id}")]
+        [HttpDelete("DeleteProd/{id}")]
         public async Task<IActionResult> DeleteProd(int id)
         {
             if (_context.Produtos == null)

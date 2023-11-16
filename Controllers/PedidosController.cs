@@ -78,7 +78,7 @@ namespace InfobarAPI.Controllers
             return resumoPedido;
         }
 
-        [HttpGet("ViewCol{idCol}")]
+        [HttpGet("ViewCol/{idCol}")]
         public async Task<ActionResult<List<PedidoViewCol>>> GetPedidosCol(int idCol)
         {
             if (_context.Pedidos == null)
@@ -97,41 +97,6 @@ namespace InfobarAPI.Controllers
 
             return pedido;
         }
-
-        /*        [HttpGet("ValorTotal/{idCol}")]
-                public async Task<ActionResult<ResumoColaborador>> GetValor(int idCol, DateTime dataInicial, DateTime dataFinal)
-                {
-                    var colaborador = await _context.Colaboradores.FindAsync(idCol);
-
-                    if (colaborador == null)
-                    {
-                        return NotFound("Colaborador " + idCol + " não encontrado");
-                    }
-
-                    var lista = _context.Pedidos.Where(pedido => pedido.ColaboradorId == idCol);
-
-                    var pedido = lista.Select(p => new PedidoViewCol
-                    {
-                        DataPedido = p.DataPedido,
-                        ProdutoNome = p.Produto.NomeProd,
-                        Preco = p.Produto.Preco
-                    }).ToList();
-
-                    var resumo = new ResumoColaborador
-                    {
-                        Nome = colaborador.Nome,
-                        ValorTotal = pedido.Sum(p => p.Preco)
-                    };
-
-                    if (resumo == null)
-                    {
-                        return Problem("Resumo do colaborador não encontrado");
-                    }
-                    else
-                    {
-                        return resumo;
-                    }
-                }*/
 
         [HttpGet("ValorTotal/{idCol}")]
         public async Task<ActionResult<ResumoColaborador>> GetValor(int idCol, DateTime dataInicial, DateTime dataFinal)
@@ -170,43 +135,26 @@ namespace InfobarAPI.Controllers
             }
         }
 
-/*
-        [HttpGet("ValorTotalTodos")]
-        public async Task<ActionResult<ResumoColaborador>> GetValorTodos(DateTime dataInicial, DateTime dataFinal)
+        [HttpGet("CodBarrasConfirma/{codigo}")]
+        public async Task<ActionResult<IEnumerable<ConfirmaPedido>>> GetProdutosByCodigo(string codigo)
         {
-            var colaborador = await _context.Colaboradores.FindAsync();
+            var produto = await _context.Produtos
+                .FirstOrDefaultAsync(p => p.CodBarras == codigo);
 
-            if (colaborador == null)
+            if (produto == null )
             {
-                return NotFound("Colaboradores não encontrados");
+                return NotFound();
             }
 
-            var pedidosCalendario = await _context.Pedidos
-                .Include(p => p.Colaborador)
-                .Include(p => p.Produto)
-                .Where(p => p.DataPedido >= dataInicial && p.DataPedido <= dataFinal)
-                .ToListAsync();
-
-            if (pedidosCalendario == null || pedidosCalendario.Count == 0)
+            var confirmaPedido = new ConfirmaPedido
             {
-                return NotFound("Nenhum pedido encontrado no período especificado para o colaborador.");
-            }
-
-            var resumo = new ResumoColaborador
-            {
-                Nome = colaborador.Nome,
-                ValorTotal = pedidosCalendario.Sum(p => p.Produto.Preco)
+                IdProd = produto.IdProd,
+                NomeProd = produto.NomeProd,
+                Preco = produto.Preco
             };
 
-            if (resumo == null)
-            {
-                return Problem("Resumo do colaborador não encontrado");
-            }
-            else
-            {
-                return resumo;
-            }
-        }*/
+            return Ok(confirmaPedido);
+        }
 
         // GET: api/Pedidos/Periodo
         [HttpGet("Periodo")]
