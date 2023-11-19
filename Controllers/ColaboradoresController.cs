@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using InfobarAPI.Data;
 using InfobarAPI.Models;
+using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 
 namespace InfobarAPI.Controllers
 {
@@ -51,6 +52,27 @@ namespace InfobarAPI.Controllers
             }
 
             return colaborador;
+        }
+
+        [HttpGet("BuscaLogin")]
+        public async Task<ActionResult<ColaboradorLogin>> GetBuscaLogin(string credencial, string senha)
+        {
+            var colaborador = await _context.Colaboradores
+                .Where(p => p.Credencial == credencial && p.Senha == senha)
+                .ToListAsync();
+
+            if (colaborador == null || !colaborador.Any())
+            {
+                return NotFound("Esse login não existe ou está errado");
+            }
+
+            var confirmaColaborador = new ColaboradorLogin
+            {
+                Credencial = credencial,
+                Senha = senha
+            };
+
+            return Ok(confirmaColaborador);
         }
 
         // PUT: api/Colaboradores/5
