@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using InfobarAPI.Data;
 using InfobarAPI.Models;
 using Microsoft.DotNet.Scaffolding.Shared.Messaging;
+using Org.BouncyCastle.Crypto.Digests;
 
 namespace InfobarAPI.Controllers
 {
@@ -61,18 +62,20 @@ namespace InfobarAPI.Controllers
                 .Where(p => p.Credencial == credencial && p.Senha == senha)
                 .ToListAsync();
 
+            var colaboradorDados = _context.Colaboradores.ToListAsync();
+
             if (colaborador == null || !colaborador.Any())
             {
                 return NotFound("Esse login não existe ou está errado");
             }
 
-            var confirmaColaborador = new ColaboradorLogin
+/*            var confirmaColaborador = new ColaboradorInputModel
             {
                 Credencial = credencial,
                 Senha = senha
-            };
+            };*/
 
-            return Ok(confirmaColaborador);
+            return Ok(colaborador);
         }
 
         // PUT: api/Colaboradores/5
