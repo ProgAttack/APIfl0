@@ -55,28 +55,21 @@ namespace InfobarAPI.Controllers
             return colaborador;
         }
 
-        [HttpGet("BuscaLogin")]
-        public async Task<ActionResult<ColaboradorLogin>> GetBuscaLogin(string credencial, string senha)
-        {
-            var colaborador = await _context.Colaboradores
-                .Where(p => p.Credencial == credencial && p.Senha == senha)
-                .ToListAsync();
+        [HttpPost("BuscaLogin")]
+public async Task<ActionResult<ColaboradorLogin>> PostBuscaLogin([FromBody] CredenciaisInputModel credenciais)
+{
+    var colaborador = await _context.Colaboradores
+        .Where(p => p.Credencial == credenciais.Credencial && p.Senha == credenciais.Senha)
+        .ToListAsync();
 
-            var colaboradorDados = _context.Colaboradores.ToListAsync();
+    if (colaborador == null || !colaborador.Any())
+    {
+        return NotFound("Esse login não existe ou está errado");
+    }
 
-            if (colaborador == null || !colaborador.Any())
-            {
-                return NotFound("Esse login não existe ou está errado");
-            }
+    return Ok(colaborador);
+}
 
-/*            var confirmaColaborador = new ColaboradorInputModel
-            {
-                Credencial = credencial,
-                Senha = senha
-            };*/
-
-            return Ok(colaborador);
-        }
 
         // PUT: api/Colaboradores/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
