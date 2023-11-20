@@ -55,18 +55,24 @@ namespace InfobarAPI.Controllers
             return colaborador;
         }
 
-       [HttpPost("BuscaLogin")]
-        public async Task<ActionResult<ColaboradorLogin>> PostBuscaLogin([FromBody] CredenciaisInputModel credenciais)
+        [HttpPost("BuscaLogin")]
+        public async Task<ActionResult<ColaboradorLogin>> PostBuscaLogin([FromBody] Colaborador credenciais)
         {
             var colaborador = await _context.Colaboradores
-                .SingleOrDefaultAsync(p => p.Credencial == credenciais.Credencial && p.Senha == credenciais.Senha);
-        
+                .FirstOrDefaultAsync(p => p.Credencial == credenciais.Credencial && p.Senha == credenciais.Senha);
+
             if (colaborador == null)
             {
                 return NotFound("Esse login não existe ou está errado");
             }
-        
-            return Ok(colaborador);
+
+            var confirmaColaborador = new ColaboradorLogin
+            {
+                Credencial = colaborador.Credencial,
+                Senha = colaborador.Senha
+            };
+
+            return Ok(confirmaColaborador);
         }
 
 
