@@ -56,26 +56,24 @@ namespace InfobarAPI.Controllers
         }
 
         [HttpPost("BuscaLogin")]
-        public async Task<ActionResult<ColaboradorLogin>> PostBuscaLogin([FromBody] Colaborador credenciais)
+        public async Task<ActionResult<ColaboradorLogin>> PostBuscaLogin([FromBody] ColaboradorLogin credenciais)
         {
             var colaborador = await _context.Colaboradores
                 .FirstOrDefaultAsync(p => p.Credencial == credenciais.Credencial && p.Senha == credenciais.Senha);
-
+        
             if (colaborador == null)
             {
                 return NotFound("Esse login não existe ou está errado");
             }
-
+        
             var confirmaColaborador = new ColaboradorLogin
             {
                 Credencial = colaborador.Credencial,
                 Senha = colaborador.Senha
             };
-
+        
             return Ok(confirmaColaborador);
         }
-
-
 
         // PUT: api/Colaboradores/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
