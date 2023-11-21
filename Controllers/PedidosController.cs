@@ -238,20 +238,23 @@ namespace InfobarAPI.Controllers
         }
         */
 
-        [HttpPost("AddPedido")]
+     [HttpPost("AddPedido")]
         public async Task<ActionResult<PedidoViewCol>> FazerPedido(PedidoInputModel model)
         {
             if (_context.Pedidos == null)
             {
                 return Problem("Entity set 'InfoDbContext.Pedidos' is null.");
             }
+        
             Produto p = await _context.Produtos.FindAsync(model.IdProduto);
-            Colaborador c = await  _context.Colaboradores.FindAsync(model.IdColaborador);
-
-            if(p == null || c == null)
+            Colaborador c = await _context.Colaboradores.FindAsync(model.IdColaborador);
+        
+            if (p == null || c == null)
             {
+                Console.WriteLine($"Produto ou Colaborador não encontrado. Produto: {p}, Colaborador: {c}");
                 return Problem("Produto ou Colaborador não encontrado");
             }
+        
             var pedido = new Pedido
             {
                 DataPedido = model.DataPedido,
@@ -260,11 +263,13 @@ namespace InfobarAPI.Controllers
                 ProdutoId = model.IdProduto,
                 Produto = p
             };
+        
             _context.Pedidos.Add(pedido);
             await _context.SaveChangesAsync();
-
+        
             return CreatedAtAction("GetPedidoViewCol", new { id = model.IdPedido }, model);
-        } 
+        }
+
 
 
         // DELETE: api/Pedidos/5
