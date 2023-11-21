@@ -55,26 +55,33 @@ namespace InfobarAPI.Controllers
             return colaborador;
         }
 
-        [HttpPost("BuscaLogin")]
-        public async Task<ActionResult<ColaboradorLogin>> PostBuscaLogin([FromBody] ColaboradorLogin credenciais)
+ [HttpPost("BuscaLogin")]
+    public async Task<ActionResult<ColaboradorLoginResponse>> PostBuscaLogin([FromBody] ColaboradorLogin credenciais)
+    {
+        // Suponha que a credencial do administrador seja "admin123". Ajuste conforme necessário.
+        const string credencialAdministrador = "admin123";
+    
+        var colaborador = await _context.Colaboradores
+            .FirstOrDefaultAsync(p => p.Credencial == credenciais.Credencial && p.Senha == credenciais.Senha);
+    
+        if (colaborador == null)
         {
-            var colaborador = await _context.Colaboradores
-                .FirstOrDefaultAsync(p => p.Credencial == credenciais.Credencial && p.Senha == credenciais.Senha);
-
-            if (colaborador == null)
-            {
-                return NotFound("Esse login não existe ou está errado");
-            }
-
-            var confirmaColaborador = new ColaboradorLogin
-            {
-                IdCol = colaborador.IdCol,
-                Credencial = colaborador.Credencial,
-                Senha = colaborador.Senha
-            };
-
-            return Ok(confirmaColaborador);
+            return NotFound("Esse login não existe ou está errado");
         }
+    
+        // Determine o tipo de usuário com base na credencial
+        string tipoUsuario = colaborador.Credencial == credencialAdministrador ? "administrador" : "colaborador";
+    
+        var confirmaColaborador = new ColaboradorLoginResponse
+        {
+            IdCol = colaborador.IdCol,
+            Credencial = colaborador.Credencial,
+            Senha = colaborador.Senha,
+            TipoUsuario = tipoUsuario
+        };
+    
+        return Ok(confirmaColaborador);
+    }
 
 
         // PUT: api/Colaboradores/5
