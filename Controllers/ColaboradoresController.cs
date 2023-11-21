@@ -55,23 +55,23 @@ namespace InfobarAPI.Controllers
             return colaborador;
         }
 
- [HttpPost("BuscaLogin")]
-    public async Task<ActionResult<ColaboradorLoginResponse>> PostBuscaLogin([FromBody] ColaboradorLogin credenciais)
+[HttpPost("BuscaLogin")]
+public async Task<ActionResult<ColaboradorLoginResponse>> PostBuscaLogin([FromBody] ColaboradorLogin credenciais)
+{
+    const string credencialAdministrador = "admin123";
+
+    try
     {
-        // Suponha que a credencial do administrador seja "admin123". Ajuste conforme necessário.
-        const string credencialAdministrador = "admin123";
-    
         var colaborador = await _context.Colaboradores
             .FirstOrDefaultAsync(p => p.Credencial == credenciais.Credencial && p.Senha == credenciais.Senha);
-    
+
         if (colaborador == null)
         {
             return NotFound("Esse login não existe ou está errado");
         }
-    
-        // Determine o tipo de usuário com base na credencial
+
         string tipoUsuario = colaborador.Credencial == credencialAdministrador ? "administrador" : "colaborador";
-    
+
         var confirmaColaborador = new ColaboradorLoginResponse
         {
             IdCol = colaborador.IdCol,
@@ -79,9 +79,16 @@ namespace InfobarAPI.Controllers
             Senha = colaborador.Senha,
             TipoUsuario = tipoUsuario
         };
-    
+
         return Ok(confirmaColaborador);
     }
+    catch (Exception ex)
+    {
+        // Adicione logs para diagnosticar o erro
+        Console.WriteLine($"Erro no método PostBuscaLogin: {ex}");
+        return StatusCode(500, "Erro interno no servidor");
+    }
+}
 
 
         // PUT: api/Colaboradores/5
