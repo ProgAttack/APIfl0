@@ -241,33 +241,45 @@ namespace InfobarAPI.Controllers
      [HttpPost("AddPedido")]
         public async Task<ActionResult<PedidoViewCol>> FazerPedido(PedidoInputModel model)
         {
-            if (_context.Pedidos == null)
+            try
             {
-                return Problem("Entity set 'InfoDbContext.Pedidos' is null.");
+                Console.WriteLine($"Recebido pedido: {model}");
+                
+                if (_context.Pedidos == null)
+                {
+                    Console.WriteLine("Entity set 'InfoDbContext.Pedidos' is null.");
+                    return Problem("Entity set 'InfoDbContext.Pedidos' is null.");
+                }
+        
+                Produto p = await _context.Produtos.FindAsync(model.IdProduto);
+                Colaborador c = await _context.Colaboradores.FindAsync(model.IdColaborador);
+        
+                if (p == null || c == null)
+                {
+                    Console.WriteLine($"Produto ou Colaborador não encontrado. Produto: {p}, Colaborador: {c}");
+                    return Problem("Produto ou Colaborador não encontrado");
+                }
+        
+                var pedido = new Pedido
+                {
+                    DataPedido = model.DataPedido,
+                    ColaboradorId = model.IdColaborador,
+                    Colaborador = c,
+                    ProdutoId = model.IdProduto,
+                    Produto = p
+                };
+        
+                _context.Pedidos.Add(pedido);
+                await _context.SaveChangesAsync();
+        
+                Console.WriteLine($"Pedido concluído com sucesso. Pedido: {pedido}");
+                return CreatedAtAction("GetPedidoViewCol", new { id = model.IdPedido }, model);
             }
-        
-            Produto p = await _context.Produtos.FindAsync(model.IdProduto);
-            Colaborador c = await _context.Colaboradores.FindAsync(model.IdColaborador);
-        
-            if (p == null || c == null)
+            catch (Exception ex)
             {
-                Console.WriteLine($"Produto ou Colaborador não encontrado. Produto: {p}, Colaborador: {c}");
-                return Problem("Produto ou Colaborador não encontrado");
+                Console.WriteLine($"Erro durante o processamento do pedido: {ex}");
+                return Problem("An error occurred while processing your request.", null, 500, "An error occurred");
             }
-        
-            var pedido = new Pedido
-            {
-                DataPedido = model.DataPedido,
-                ColaboradorId = model.IdColaborador,
-                Colaborador = c,
-                ProdutoId = model.IdProduto,
-                Produto = p
-            };
-        
-            _context.Pedidos.Add(pedido);
-            await _context.SaveChangesAsync();
-        
-            return CreatedAtAction("GetPedidoViewCol", new { id = model.IdPedido }, model);
         }
 
 
