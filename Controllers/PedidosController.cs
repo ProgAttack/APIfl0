@@ -136,24 +136,35 @@ namespace InfobarAPI.Controllers
         }
 
         [HttpGet("CodBarrasConfirma/{codigo}")]
-        public async Task<ActionResult<IEnumerable<ConfirmaPedido>>> GetProdutosByCodigo(string codigo)
+        public async Task<ActionResult> GetProdutosByCodigo(string codigo)
         {
-            var produto = await _context.Produtos
-                .FirstOrDefaultAsync(p => p.CodBarras == codigo);
-
-            if (produto == null )
+            try
             {
-                return NotFound();
+                // Verifica se o produto existe com base no código de barras
+                var produto = await _context.Produtos
+                    .FirstOrDefaultAsync(p => p.CodBarras == codigo);
+        
+                if (produto == null)
+                {
+                    return NotFound("Produto não encontrado");
+                }
+        
+                // Crie um objeto para representar as informações do produto
+                var produtoInfo = new
+                {
+                    IdProd = produto.IdProd,
+                    NomeProd = produto.NomeProd,
+                    Preco = produto.Preco
+                };
+        
+                return Ok(produtoInfo);
             }
-
-            var confirmaPedido = new ConfirmaPedido
+            catch (Exception ex)
             {
-                IdProd = produto.IdProd,
-                NomeProd = produto.NomeProd,
-                Preco = produto.Preco
-            };
-
-            return Ok(confirmaPedido);
+                // Log do erro, você pode personalizar conforme necessário
+                Console.Error.WriteLine($"Erro ao buscar produto por código de barras: {ex.Message}");
+                return StatusCode(500, "Erro interno do servidor");
+            }
         }
 
         // GET: api/Pedidos/Periodo
