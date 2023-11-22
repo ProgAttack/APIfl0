@@ -156,6 +156,7 @@ namespace InfobarAPI.Controllers
                     NomeProd = produto.NomeProd,
                     Preco = produto.Preco
                 };
+                Console.WriteLine($"Produto encontrado: {produtoInfo}");
         
                 return Ok(produtoInfo);
             }
