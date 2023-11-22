@@ -55,27 +55,41 @@ namespace InfobarAPI.Controllers
         [HttpGet("PedidoView/{id}")]
         public async Task<ActionResult<PedidoViewCol>> GetPedidoViewCol(int id)
         {
-            if (_context.Pedidos == null)
-            {
-                return NotFound();
+        try
+        {
+        // Certifique-se de que o contexto e a tabela Pedidos não são nulos
+        if (_context == null || _context.Pedidos == null)
+        {
+            return NotFound("Contexto ou tabela de Pedidos não encontrados");
+        }
+
+        // Busque o pedido incluindo os dados do produto
+        var pedido = await _context.Pedidos
+            .Include(p => p.Produto)
+            .FirstOrDefaultAsync(p => p.IdPed == id);
+
+        // Verifique se o pedido foi encontrado
+        if (pedido == null || pedido.Produto == null)
+        {
+            return NotFound($"Pedido não encontrado para o ID: {id}");
+        }
+
+        // Crie o objeto de resposta
+        var resumoPedido = new PedidoViewCol
+        {
+            DataPedido = pedido.DataPedido,
+            ProdutoNome = pedido.Produto.NomeProd,
+            Preco = pedido.Produto.Preco
+        };
+
+        return resumoPedido;
+        }
+        catch (Exception ex)
+        {
+        // Log do erro, você pode personalizar conforme necessário
+        Console.Error.WriteLine($"Erro durante a obtenção do pedido: {ex.Message}");
+        return StatusCode(500, "Erro interno do servidor");
             }
-            var pedido = await _context.Pedidos.FindAsync(id);
-
-            var produto = await _context.Produtos.FindAsync(pedido.ProdutoId);
-
-            if (pedido == null || produto == null )
-            {
-                return NotFound();
-            }
-
-            var resumoPedido = new PedidoViewCol
-            {
-                DataPedido = pedido.DataPedido,
-                ProdutoNome = produto.NomeProd,
-                Preco = produto.Preco
-            };
-
-            return resumoPedido;
         }
 
         
