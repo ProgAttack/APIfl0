@@ -251,49 +251,56 @@ namespace InfobarAPI.Controllers
         */
 
      [HttpPost("AddPedido")]
+    
         public async Task<ActionResult<PedidoViewCol>> FazerPedido(PedidoInputModel model)
         {
-            try
+        try
         {
-            Console.WriteLine($"Recebido pedido: {model}");
+        // Verifique se model, p e c não são nulos
+        if (model == null || model.IdProduto == null || model.IdColaborador == null)
+        {
+            return BadRequest("Model, Produto ou Colaborador inválidos");
+        }
 
-            Produto p = await _context.Produtos.FindAsync(model.IdProduto);
-            Colaborador c = await _context.Colaboradores.FindAsync(model.IdColaborador);
+        // Busque produto e colaborador
+        Produto p = await _context.Produtos.FindAsync(model.IdProduto);
+        Colaborador c = await _context.Colaboradores.FindAsync(model.IdColaborador);
 
-            if (p == null || c == null)
-            {
-                Console.WriteLine($"Produto ou Colaborador não encontrado. ProdutoId: {model.IdProduto}, ColaboradorId: {model.IdColaborador}");
-                return Problem($"Produto ou Colaborador não encontrado. ProdutoId: {model.IdProduto}, ColaboradorId: {model.IdColaborador}");
-            }
+        // Verifique se produto e colaborador foram encontrados
+        if (p == null || c == null)
+        {
+            return NotFound("Produto ou Colaborador não encontrado");
+        }
 
-            var pedido = new Pedido
-            {
-                DataPedido = model.DataPedido,
-                ColaboradorId = model.IdColaborador,
-                Colaborador = c,
-                ProdutoId = model.IdProduto,
-                Produto = p
-            };
+        // Crie um novo pedido
+        var pedido = new Pedido
+        {
+            DataPedido = DateTime.Now, // Use a data atual
+            ColaboradorId = model.IdColaborador,
+            Colaborador = c,
+            ProdutoId = model.IdProduto,
+            Produto = p
+        };
 
-            _context.Pedidos.Add(pedido);
-            await _context.SaveChangesAsync();
+        // Adicione o pedido ao contexto e salve as alterações
+        _context.Pedidos.Add(pedido);
+        await _context.SaveChangesAsync();
 
-            Console.WriteLine($"Pedido concluído com sucesso. Detalhes do pedido: Id: {pedido.IdPed}, DataPedido: {pedido.DataPedido}, Produto: {pedido.Produto.NomeProd}, Preço: {pedido.Produto.Preco}");
-
-        // Retorna um OkObjectResult com o PedidoViewCol (ou outros dados, se necessário)
-            return Ok(new PedidoViewCol
-            {
-                DataPedido = pedido.DataPedido,
-                ProdutoNome = pedido.Produto.NomeProd,
-                Preco = pedido.Produto.Preco
-            });
+        // Retorne CreatedAtAction com os detalhes do pedido
+        return CreatedAtAction(nameof(GetPedidoViewCol), new { id = pedido.IdPed }, new PedidoViewCol
+        {
+            DataPedido = pedido.DataPedido,
+            ProdutoNome = pedido.Produto.NomeProd,
+            Preco = pedido.Produto.Preco
+        });
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Erro durante o processamento do pedido. Tipo: {ex.GetType().Name}, Mensagem: {ex.Message}, StackTrace: {ex.StackTrace}");
-            return Problem("An error occurred while processing your request.", null, 500, "An error occurred");
+        // Log do erro
+        Console.Error.WriteLine($"Erro durante o processamento do pedido: {ex.Message}");
+        return StatusCode(500, "An error occurred while processing your request.");
         }
-    }
+        }
 
 
 
