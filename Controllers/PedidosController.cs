@@ -78,26 +78,35 @@ namespace InfobarAPI.Controllers
             return resumoPedido;
         }
 
-        [HttpGet("ViewCol/{idCol}")]
+        
+      [HttpGet("PedidosCol/{idCol}")]
         public async Task<ActionResult<List<PedidoViewCol>>> GetPedidosCol(int idCol)
         {
-            if (_context.Pedidos == null)
-            {
-                return NotFound();
-            }
-
-            var lista = _context.Pedidos.Where(pedido => pedido.ColaboradorId == idCol);
-
-            var pedido = lista.Select(p => new PedidoViewCol 
-            { 
-                DataPedido = p.DataPedido,
-                ProdutoNome = p.Produto.NomeProd,
-                Preco = p.Produto.Preco
-            }).ToList();
-
-            return pedido;
+        if (_context.Pedidos == null)
+        {
+        return NotFound();
         }
 
+        var lista = _context.Pedidos
+        .Include(p => p.Colaborador)
+        .Include(p => p.Produto)
+        .Where(pedido => pedido.ColaboradorId == idCol);
+
+        var pedidos = lista.Select(p => new PedidoViewCol 
+        { 
+        DataPedido = p.DataPedido,
+        ProdutoNome = p.Produto.NomeProd,
+        Preco = p.Produto.Preco
+        }).ToList();
+
+        return pedidos;
+        }              
+            
+            
+
+
+
+        
         [HttpGet("ValorTotal/{idCol}")]
         public async Task<ActionResult<ResumoColaborador>> GetValor(int idCol, DateTime dataInicial, DateTime dataFinal)
         {
