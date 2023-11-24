@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,6 +9,7 @@ using InfobarAPI.Data;
 using InfobarAPI.Models;
 using System.Xml.Schema;
 using MySqlX.XDevAPI.Common;
+using Newtonsoft.Json;
 
 namespace InfobarAPI.Controllers
 {
@@ -55,72 +56,64 @@ namespace InfobarAPI.Controllers
         [HttpGet("PedidoView/{id}")]
         public async Task<ActionResult<PedidoViewCol>> GetPedidoViewCol(int id)
         {
-        try
-        {
-        // Certifique-se de que o contexto e a tabela Pedidos não são nulos
-        if (_context == null || _context.Pedidos == null)
-        {
-            return NotFound("Contexto ou tabela de Pedidos não encontrados");
-        }
+            try
+            {
+                // Certifique-se de que o contexto e a tabela Pedidos não são nulos
+                if (_context == null || _context.Pedidos == null)
+                {
+                    return NotFound("Contexto ou tabela de Pedidos não encontrados");
+                }
 
-        // Busque o pedido incluindo os dados do produto
-        var pedido = await _context.Pedidos
-            .Include(p => p.Produto)
-            .FirstOrDefaultAsync(p => p.IdPed == id);
+                // Busque o pedido incluindo os dados do produto
+                var pedido = await _context.Pedidos
+                    .Include(p => p.Produto)
+                    .FirstOrDefaultAsync(p => p.IdPed == id);
 
-        // Verifique se o pedido foi encontrado
-        if (pedido == null || pedido.Produto == null)
-        {
-            return NotFound($"Pedido não encontrado para o ID: {id}");
-        }
+                // Verifique se o pedido foi encontrado
+                if (pedido == null || pedido.Produto == null)
+                {
+                    return NotFound($"Pedido não encontrado para o ID: {id}");
+                }
 
-        // Crie o objeto de resposta
-        var resumoPedido = new PedidoViewCol
-        {
-            DataPedido = pedido.DataPedido,
-            ProdutoNome = pedido.Produto.NomeProd,
-            Preco = pedido.Produto.Preco
-        };
+                // Crie o objeto de resposta
+                var resumoPedido = new PedidoViewCol
+                {
+                    DataPedido = pedido.DataPedido,
+                    ProdutoNome = pedido.Produto.NomeProd,
+                    Preco = pedido.Produto.Preco
+                };
 
-        return resumoPedido;
-        }
-        catch (Exception ex)
-        {
-        // Log do erro, você pode personalizar conforme necessário
-        Console.Error.WriteLine($"Erro durante a obtenção do pedido: {ex.Message}");
-        return StatusCode(500, "Erro interno do servidor");
+                return resumoPedido;
+            }
+            catch (Exception ex)
+            {
+                // Log do erro, você pode personalizar conforme necessário
+                Console.Error.WriteLine($"Erro durante a obtenção do pedido: {ex.Message}");
+                return StatusCode(500, "Erro interno do servidor");
             }
         }
 
-        
-      [HttpGet("PedidosCol/{idCol}")]
+
+        [HttpGet("ViewCol/{idCol}")]
         public async Task<ActionResult<List<PedidoViewCol>>> GetPedidosCol(int idCol)
         {
-        if (_context.Pedidos == null)
-        {
-        return NotFound();
+            if (_context.Pedidos == null)
+            {
+                return NotFound();
+            }
+
+            var lista = _context.Pedidos.Where(pedido => pedido.ColaboradorId == idCol);
+
+            var pedido = lista.Select(p => new PedidoViewCol 
+            { 
+                DataPedido = p.DataPedido,
+                ProdutoNome = p.Produto.NomeProd,
+                Preco = p.Produto.Preco
+            }).ToList();
+
+            return pedido;
         }
 
-        var lista = _context.Pedidos
-        .Include(p => p.Colaborador)
-        .Include(p => p.Produto)
-        .Where(pedido => pedido.ColaboradorId == idCol);
-
-        var pedidos = lista.Select(p => new PedidoViewCol 
-        { 
-        DataPedido = p.DataPedido,
-        ProdutoNome = p.Produto.NomeProd,
-        Preco = p.Produto.Preco
-        }).ToList();
-
-        return pedidos;
-        }              
-            
-            
-
-
-
-        
         [HttpGet("ValorTotal/{idCol}")]
         public async Task<ActionResult<ResumoColaborador>> GetValor(int idCol, DateTime dataInicial, DateTime dataFinal)
         {
@@ -273,56 +266,57 @@ namespace InfobarAPI.Controllers
         }
         */
 
-     [HttpPost("AddPedido")]
-    
-        public async Task<ActionResult<PedidoViewCol>> FazerPedido(PedidoInputModel model)
+        [HttpPost("AddPedido")]
+        public async Task<ActionResult<PedidoViewCol>> FazerPedido([FromBody] PedidoInputModel model)
         {
-        try
-        {
-        // Verifique se model, p e c não são nulos
-        if (model == null || model.IdProduto == null || model.IdColaborador == null)
-        {
-            return BadRequest("Model, Produto ou Colaborador inválidos");
-        }
+            try
+            {
+                if (model == null || model.IdProduto <= 0 || model.IdColaborador <= 0)
+                {
+                    Console.Error.WriteLine("Model, Produto ou Colaborador inválidos.");
+                    return BadRequest("Model, Produto ou Colaborador inválidos");
+                }
 
-        // Busque produto e colaborador
-        Produto p = await _context.Produtos.FindAsync(model.IdProduto);
-        Colaborador c = await _context.Colaboradores.FindAsync(model.IdColaborador);
+                Produto p = await _context.Produtos.FindAsync(model.IdProduto);
+                Colaborador c = await _context.Colaboradores.FindAsync(model.IdColaborador);
 
-        // Verifique se produto e colaborador foram encontrados
-        if (p == null || c == null)
-        {
-            return NotFound("Produto ou Colaborador não encontrado");
-        }
+                if (p == null || c == null)
+                {
+                    Console.Error.WriteLine(p);
+                    Console.Error.WriteLine(c);
+                    Console.Error.WriteLine("Produto ou Colaborador não encontrado.");
+                    return NotFound("Produto ou Colaborador não encontrado");
+                }
 
-        // Crie um novo pedido
-        var pedido = new Pedido
-        {
-            DataPedido = DateTime.Now, // Use a data atual
-            ColaboradorId = model.IdColaborador,
-            Colaborador = c,
-            ProdutoId = model.IdProduto,
-            Produto = p
-        };
+                var pedido = new Pedido
+                {
+                    DataPedido = DateTime.UtcNow, // Converta para UTC
+                    ColaboradorId = model.IdColaborador,
+                    Colaborador = c,
+                    ProdutoId = model.IdProduto,
+                    Produto = p
+                };
 
-        // Adicione o pedido ao contexto e salve as alterações
-        _context.Pedidos.Add(pedido);
-        await _context.SaveChangesAsync();
+                _context.Pedidos.Add(pedido);
+                await _context.SaveChangesAsync();
 
-        // Retorne CreatedAtAction com os detalhes do pedido
-        return CreatedAtAction(nameof(GetPedidoViewCol), new { id = pedido.IdPed }, new PedidoViewCol
-        {
-            DataPedido = pedido.DataPedido,
-            ProdutoNome = pedido.Produto.NomeProd,
-            Preco = pedido.Produto.Preco
-        });
-        }
-        catch (Exception ex)
-        {
-        // Log do erro
-        Console.Error.WriteLine($"Erro durante o processamento do pedido: {ex.Message}");
-        return StatusCode(500, "An error occurred while processing your request.");
-        }
+                var pedidoViewCol = new PedidoViewCol
+                {
+                    DataPedido = pedido.DataPedido,
+                    ProdutoNome = pedido.Produto.NomeProd,
+                    Preco = pedido.Produto.Preco
+                };
+
+                Console.WriteLine($"Pedido concluído com sucesso: {JsonConvert.SerializeObject(pedidoViewCol)}");
+
+                return CreatedAtAction(nameof(GetPedidoViewCol), new { id = pedido.IdPed }, pedidoViewCol);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Erro durante o processamento do pedido: {ex.Message}");
+                Console.Error.WriteLine($"StackTrace: {ex.StackTrace}");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
         }
 
 
