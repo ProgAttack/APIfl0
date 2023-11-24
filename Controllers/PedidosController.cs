@@ -290,7 +290,7 @@ namespace InfobarAPI.Controllers
 
                 var pedido = new Pedido
                 {
-                    DataPedido = DateTime.UtcNow, // Converta para UTC
+                    DataPedido = model.DataPedido, // Converta para UTC
                     ColaboradorId = model.IdColaborador,
                     Colaborador = c,
                     ProdutoId = model.IdProduto,
