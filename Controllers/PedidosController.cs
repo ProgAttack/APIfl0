@@ -28,10 +28,10 @@ namespace InfobarAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Pedido>>> GetPedidos()
         {
-          if (_context.Pedidos == null)
-          {
-              return NotFound();
-          }
+            if (_context.Pedidos == null)
+            {
+                return NotFound();
+            }
             return await _context.Pedidos.ToListAsync();
         }
 
@@ -39,10 +39,10 @@ namespace InfobarAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Pedido>> GetPedido(int id)
         {
-          if (_context.Pedidos == null)
-          {
-              return NotFound();
-          }
+            if (_context.Pedidos == null)
+            {
+                return NotFound();
+            }
             var pedido = await _context.Pedidos.FindAsync(id);
 
             if (pedido == null)
@@ -104,8 +104,8 @@ namespace InfobarAPI.Controllers
 
             var lista = _context.Pedidos.Where(pedido => pedido.ColaboradorId == idCol);
 
-            var pedido = lista.Select(p => new PedidoViewCol 
-            { 
+            var pedido = lista.Select(p => new PedidoViewCol
+            {
                 DataPedido = p.DataPedido,
                 ProdutoNome = p.Produto.NomeProd,
                 Preco = p.Produto.Preco
@@ -159,12 +159,12 @@ namespace InfobarAPI.Controllers
                 // Verifica se o produto existe com base no código de barras
                 var produto = await _context.Produtos
                     .FirstOrDefaultAsync(p => p.CodBarras == codigo);
-        
+
                 if (produto == null)
                 {
                     return NotFound("Produto não encontrado");
                 }
-        
+
                 // Crie um objeto para representar as informações do produto
                 var produtoInfo = new
                 {
@@ -173,7 +173,7 @@ namespace InfobarAPI.Controllers
                     Preco = produto.Preco
                 };
                 Console.WriteLine($"Produto encontrado: {produtoInfo}");
-        
+
                 return Ok(produtoInfo);
             }
             catch (Exception ex)
@@ -203,7 +203,7 @@ namespace InfobarAPI.Controllers
 
             double total = 0.0;
 
-            foreach ( Pedido item in pedidos )
+            foreach (Pedido item in pedidos)
             {
                 var resumoPedido = new PedidoViewCol
                 {
@@ -290,8 +290,8 @@ namespace InfobarAPI.Controllers
 
                 var pedido = new Pedido
                 {
-                    DataPedido = model.DataPedido, // Converta para UTC
-                    ColaboradorId = model.IdColaborador,
+                    DataPedido = model.DataPedido,
+                    ColaboradorId = c.IdCol, // Use o IdCol do Colaborador
                     Colaborador = c,
                     ProdutoId = model.IdProduto,
                     Produto = p
@@ -318,8 +318,6 @@ namespace InfobarAPI.Controllers
                 return StatusCode(500, "An error occurred while processing your request.");
             }
         }
-
-
 
         // DELETE: api/Pedidos/5
         [HttpDelete("{id}")]
@@ -374,5 +372,6 @@ namespace InfobarAPI.Controllers
         {
             return (_context.Pedidos?.Any(e => e.IdPed == id)).GetValueOrDefault();
         }
+
     }
 }
