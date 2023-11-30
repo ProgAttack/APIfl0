@@ -147,12 +147,12 @@ namespace InfobarAPI.Controllers
         
                 return resumo;
             }
-            catch (Exception ex)
+              catch (Exception ex)
             {
-                // Capturar exceções e retornar uma resposta com o erro
-                return Problem($"Erro ao processar a solicitação: {ex.Message}");
+                Console.WriteLine($"Erro na API: {ex.Message}");
+                return StatusCode(500, "Erro interno na API");
             }
-        }
+            }
 
         [HttpGet("CodBarrasConfirma/{codigo}")]
         public async Task<ActionResult> GetProdutosByCodigo(string codigo)
