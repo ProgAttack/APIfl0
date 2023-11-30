@@ -114,45 +114,49 @@ namespace InfobarAPI.Controllers
             return pedido;
         }
 
-      [HttpGet("ValorTotal/{idCol}")]
+     
+        [HttpGet("ValorTotal/{idCol}")]
         public async Task<ActionResult<ResumoColaborador>> GetValor(int idCol, DateTime dataInicial, DateTime dataFinal)
         {
-            try
+            Console.WriteLine($"Recebido pedido para calcular valor total. IdCol: {idCol}, DataInicial: {dataInicial}, DataFinal: {dataFinal}");
+        
+            var colaborador = await _context.Colaboradores.FindAsync(idCol);
+        
+            if (colaborador == null)
             {
-                var colaborador = await _context.Colaboradores.FindAsync(idCol);
+                Console.WriteLine($"Colaborador {idCol} não encontrado");
+                return NotFound("Colaborador " + idCol + " não encontrado");
+            }
         
-                if (colaborador == null)
-                {
-                    // Colaborador não encontrado, retornar 404
-                    return NotFound($"Colaborador {idCol} não encontrado");
-                }
+            var pedidosCalendario = await _context.Pedidos
+                .Include(p => p.Colaborador)
+                .Include(p => p.Produto)
+                .Where(p => p.DataPedido >= dataInicial && p.DataPedido <= dataFinal && p.ColaboradorId == idCol)
+                .ToListAsync();
         
-                var pedidosCalendario = await _context.Pedidos
-                    .Include(p => p.Colaborador)
-                    .Include(p => p.Produto)
-                    .Where(p => p.DataPedido >= dataInicial && p.DataPedido <= dataFinal && p.ColaboradorId == idCol)
-                    .ToListAsync();
+            if (pedidosCalendario == null || pedidosCalendario.Count == 0)
+            {
+                Console.WriteLine($"Nenhum pedido encontrado no período especificado para o colaborador {idCol}");
+                return NotFound("Nenhum pedido encontrado no período especificado para o colaborador.");
+            }
         
-                if (pedidosCalendario == null || pedidosCalendario.Count == 0)
-                {
-                    // Nenhum pedido encontrado, retornar 404
-                    return NotFound($"Nenhum pedido encontrado no período especificado para o colaborador {idCol}");
-                }
+            var resumo = new ResumoColaborador
+            {
+                Nome = colaborador.Nome,
+                ValorTotal = pedidosCalendario.Sum(p => p.Produto.Preco)
+            };
         
-                var resumo = new ResumoColaborador
-                {
-                    Nome = colaborador.Nome,
-                    ValorTotal = pedidosCalendario.Sum(p => p.Produto.Preco)
-                };
-        
+            if (resumo == null)
+            {
+                Console.WriteLine($"Resumo do colaborador não encontrado");
+                return Problem("Resumo do colaborador não encontrado");
+            }
+            else
+            {
+                Console.WriteLine($"Valor total calculado para o colaborador {idCol}: {resumo.ValorTotal}");
                 return resumo;
             }
-              catch (Exception ex)
-            {
-                Console.WriteLine($"Erro na API: {ex.Message}");
-                return StatusCode(500, "Erro interno na API");
-            }
-            }
+        }
 
         [HttpGet("CodBarrasConfirma/{codigo}")]
         public async Task<ActionResult> GetProdutosByCodigo(string codigo)
