@@ -114,33 +114,35 @@ namespace InfobarAPI.Controllers
             return pedido;
         }
 
-       [HttpGet("ValorTotal/{idCol}")]
-            public async Task<ActionResult<ResumoColaborador>> GetValor(int idCol)
+      [HttpGet("ValorTotal/{idCol}")]
+        public async Task<ActionResult<ResumoColaborador>> GetValor(int idCol)
+        {
+            try
             {
                 var colaborador = await _context.Colaboradores.FindAsync(idCol);
-            
+        
                 if (colaborador == null)
                 {
                     return NotFound("Colaborador " + idCol + " não encontrado");
                 }
-            
+        
                 var pedidosColaborador = await _context.Pedidos
                     .Include(p => p.Colaborador)
                     .Include(p => p.Produto)
                     .Where(p => p.ColaboradorId == idCol)
                     .ToListAsync();
-            
+        
                 if (pedidosColaborador == null || pedidosColaborador.Count == 0)
                 {
                     return NotFound("Nenhum pedido encontrado para o colaborador.");
                 }
-            
+        
                 var resumo = new ResumoColaborador
                 {
                     Nome = colaborador.Nome,
                     ValorTotal = pedidosColaborador.Sum(p => p.Produto.Preco)
                 };
-            
+        
                 if (resumo == null)
                 {
                     return Problem("Resumo do colaborador não encontrado");
@@ -150,6 +152,14 @@ namespace InfobarAPI.Controllers
                     return resumo;
                 }
             }
+            catch (Exception ex)
+            {
+                // Log o erro para fins de depuração
+                Console.Error.WriteLine($"Erro no endpoint ValorTotal: {ex.Message}");
+                return StatusCode(500, "Erro interno no servidor");
+            }
+        }
+
 
         [HttpGet("CodBarrasConfirma/{codigo}")]
         public async Task<ActionResult> GetProdutosByCodigo(string codigo)
