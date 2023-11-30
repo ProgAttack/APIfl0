@@ -140,7 +140,7 @@ namespace InfobarAPI.Controllers
                 var resumo = new ResumoColaborador
                 {
                     Nome = colaborador.Nome,
-                    ValorTotal = pedidosColaborador.Sum(p => p.Produto.Preco)
+                    ValorTotal = pedidoViewCol.Sum(p => p.Produto.Preco)
                 };
         
                 if (resumo == null)
