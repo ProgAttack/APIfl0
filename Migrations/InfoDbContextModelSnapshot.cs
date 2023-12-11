@@ -58,6 +58,23 @@ namespace InfobarAPI.Migrations
                     b.ToTable("Colaboradores");
                 });
 
+            modelBuilder.Entity("InfobarAPI.Models.ColaboradorLogin", b =>
+                {
+                    b.Property<string>("Credencial")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Senha")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("idCol")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Credencial");
+
+                    b.ToTable("ColaboradorLogin");
+                });
+
             modelBuilder.Entity("InfobarAPI.Models.Pedido", b =>
                 {
                     b.Property<int>("IdPed")
@@ -74,6 +91,10 @@ namespace InfobarAPI.Migrations
 
                     b.Property<int>("ProdutoId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Situacao")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("IdPed");
 

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "IQGmf25BiPivecGu342eAaZlnxwjZhpXVM9TTiTbM+D4EwqVUBf86e7A0Nnuufo69MkkCWLr6/JLs3ULIAls/Q==",
+  "dgSpecHash": "NBjy6UaGGUaCkvmf1O+lWTzr+AS2T14A71QvtRfD4CJNXzuVru3I3863O9CyTcuapxyMVybeEu0Vyqv0uxz1qw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Suporte15\\Desktop\\API3010\\InfobarAPI.csproj",
+  "projectFilePath": "C:\\Users\\Suporte15\\Desktop\\APIfl0-main\\InfobarAPI.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Suporte15\\.nuget\\packages\\google.protobuf\\3.21.9\\google.protobuf.3.21.9.nupkg.sha512",
     "C:\\Users\\Suporte15\\.nuget\\packages\\humanizer\\2.14.1\\humanizer.2.14.1.nupkg.sha512",

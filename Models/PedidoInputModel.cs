@@ -10,5 +10,7 @@ namespace InfobarAPI.Models
         public int IdColaborador { get; set; }
         public int IdProduto { get; set; }
 
+        
+
     }
 }

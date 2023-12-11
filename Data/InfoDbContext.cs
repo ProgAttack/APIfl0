@@ -11,6 +11,7 @@ namespace InfobarAPI.Data
         public DbSet<Colaborador> Colaboradores { get; set;}
         public DbSet<Pedido> Pedidos { get; set;}
         public DbSet<Produto> Produtos { get; set;}
+        public DbSet<InfobarAPI.Models.ColaboradorLogin>? ColaboradorLogin { get; set; }
 
 
 

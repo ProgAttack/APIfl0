@@ -1,9 +1,19 @@
-﻿namespace InfobarAPI.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace InfobarAPI.Models
 {
     public class ColaboradorLogin
+
+      
     {
-        public int IdCol { get; set; }
+        
+        public int idCol { get; set; }
+
+        [Key]
+        [Required]
         public string Credencial { get; set; }
+
+        [Required]
         public string Senha { get; set; }
     }
 }
