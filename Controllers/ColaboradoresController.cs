@@ -55,40 +55,6 @@ namespace InfobarAPI.Controllers
             return colaborador;
         }
 
-[HttpPost("BuscaLogin")]
-public async Task<ActionResult<ColaboradorLoginResponse>> PostBuscaLogin([FromBody] ColaboradorLogin credenciais)
-{
-    const string credencialAdministrador = "admin123";
-
-    try
-    {
-        var colaborador = await _context.Colaboradores
-            .FirstOrDefaultAsync(p => p.Credencial == credenciais.Credencial && p.Senha == credenciais.Senha);
-
-        if (colaborador == null)
-        {
-            return NotFound("Esse login não existe ou está errado");
-        }
-
-        string tipoUsuario = colaborador.Credencial == credencialAdministrador ? "administrador" : "colaborador";
-
-        var confirmaColaborador = new ColaboradorLoginResponse
-        {
-            IdCol = colaborador.IdCol,
-            Credencial = colaborador.Credencial,
-            Senha = colaborador.Senha,
-            TipoUsuario = tipoUsuario
-        };
-
-        return Ok(confirmaColaborador);
-    }
-    catch (Exception ex)
-    {
-        // Adicione logs para diagnosticar o erro
-        Console.WriteLine($"Erro no método PostBuscaLogin: {ex}");
-        return StatusCode(500, "Erro interno no servidor");
-    }
-}
 
 
         // PUT: api/Colaboradores/5
@@ -120,6 +86,30 @@ public async Task<ActionResult<ColaboradorLoginResponse>> PostBuscaLogin([FromBo
             }
 
             return NoContent();
+        }
+
+        [HttpPost("BuscaLogin")]
+        public async Task<ActionResult<Colaborador>> BuscaLogin([FromBody] ColaboradorLogin loginModel)
+        {
+            try
+            {
+                // Verifique se as credenciais são válidas no banco de dados
+                var colaborador = await _context.Colaboradores
+                    .FirstOrDefaultAsync(c => c.Credencial == loginModel.Credencial && c.Senha == loginModel.Senha);
+
+                if (colaborador == null)
+                {
+                    return NotFound("Credenciais inválidas");
+                }
+
+                // Retorna o colaborador autenticado
+                return colaborador;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Erro durante a busca de login: {ex.Message}");
+                return StatusCode(500, "Erro interno do servidor");
+            }
         }
 
         [HttpPut("EditColaborador/{id}")]
