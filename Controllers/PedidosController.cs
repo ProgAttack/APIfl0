@@ -115,40 +115,30 @@ namespace InfobarAPI.Controllers
         }
 
 
+     
         [HttpGet("ValorTotal/{idCol}")]
         public async Task<ActionResult<ResumoColaborador>> GetValor(int idCol)
         {
             var colaborador = await _context.Colaboradores.FindAsync(idCol);
-
+        
             if (colaborador == null)
             {
                 return NotFound("Colaborador " + idCol + " não encontrado");
             }
-
-            // Obtém a data inicial e final para os pedidos pendentes
-            DateTime dataInicial = DateTime.Today.AddMonths(-1); // Último mês
-            DateTime dataFinal = DateTime.Today.AddDays(1); // Próximo mês
-
-            var pedidosPendentes = await _context.Pedidos
-                .Include(p => p.Colaborador)
-                .Include(p => p.Produto)
-                .Where(p => p.ColaboradorId == idCol && p.Situacao == "Pendente" && p.DataPedido >= dataInicial && p.DataPedido < dataFinal)
-                .ToListAsync();
-
-            if (pedidosPendentes == null || pedidosPendentes.Count == 0)
-            {
-                return NotFound("Nenhum pedido pendente encontrado para o colaborador.");
-            }
-
+        
+            var valorTotal = await _context.Pedidos
+                .Where(p => p.ColaboradorId == idCol)
+                .SumAsync(p => p.Produto.Preco);
+        
             var resumo = new ResumoColaborador
             {
                 Nome = colaborador.Nome,
-                ValorTotal = pedidosPendentes.Sum(p => p.Produto.Preco)
+                ValorTotal = valorTotal
             };
-
+        
             return resumo;
         }
-
+        
 
 
         // Novo método para finalizar os pedidos pendentes
