@@ -137,7 +137,7 @@ namespace InfobarAPI.Controllers
             }
         
             // Soma os valores dos pedidos
-            decimal valorTotal = pedidosPendentes.Sum(p => p.Produto.Preco);
+            double valorTotal = pedidosPendentes.Sum(p => p.Produto.Preco);
         
             var resumo = new ResumoColaborador
             {
