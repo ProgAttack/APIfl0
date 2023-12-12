@@ -116,7 +116,7 @@ namespace InfobarAPI.Controllers
 
 
      
-        [HttpGet("ValorTotal/{idCol}")]
+        [HttpGet("ValorTotal/{idCol}")]               
         public async Task<ActionResult<ResumoColaborador>> GetValor(int idCol)
         {
             var colaborador = await _context.Colaboradores.FindAsync(idCol);
@@ -126,9 +126,18 @@ namespace InfobarAPI.Controllers
                 return NotFound("Colaborador " + idCol + " não encontrado");
             }
         
-            var valorTotal = await _context.Pedidos
-                .Where(p => p.ColaboradorId == idCol)
-                .SumAsync(p => p.Produto.Preco);
+            var pedidosPendentes = await _context.Pedidos
+                .Include(p => p.Produto)
+                .Where(p => p.ColaboradorId == idCol && p.Situacao == "Pendente")
+                .ToListAsync();
+        
+            if (pedidosPendentes == null || pedidosPendentes.Count == 0)
+            {
+                return NotFound("Nenhum pedido pendente encontrado para o colaborador.");
+            }
+        
+            // Soma os valores dos pedidos
+            decimal valorTotal = pedidosPendentes.Sum(p => p.Produto.Preco);
         
             var resumo = new ResumoColaborador
             {
