@@ -152,7 +152,7 @@ namespace InfobarAPI.Controllers
 
 
         // Novo método para finalizar os pedidos pendentes
-        [HttpPost("FinalizarPedidos/{idCol}")]
+        [HttpPut("FinalizarPedidos/{idCol}")]
         public async Task<IActionResult> FinalizarPedidos(int idCol)
         {
             try
@@ -169,17 +169,14 @@ namespace InfobarAPI.Controllers
                     return NotFound("Nenhum pedido pendente encontrado para o colaborador.");
                 }
         
-                var pedidosFinalizados = new List<int>();
-        
                 foreach (var pedido in pedidosPendentes)
                 {
                     pedido.Situacao = "Finalizado";
-                    pedidosFinalizados.Add(pedido.IdPed);
                 }
         
                 await _context.SaveChangesAsync();
         
-                return Ok(new { message = "Pedidos pendentes finalizados com sucesso.", pedidosFinalizados });
+                return Ok("Pedidos pendentes finalizados com sucesso.");
             }
             catch (Exception ex)
             {
@@ -187,7 +184,6 @@ namespace InfobarAPI.Controllers
                 return StatusCode(500, "Erro interno do servidor");
             }
         }
-
         [HttpGet("CodBarrasConfirma/{codigo}")]
         public async Task<ActionResult> GetProdutosByCodigo(string codigo)
         {
