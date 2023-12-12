@@ -155,8 +155,12 @@ namespace InfobarAPI.Controllers
         [HttpPost("FinalizarPedidos/{idCol}")]
         public async Task<IActionResult> FinalizarPedidos(int idCol)
         {
+            // Obtém a data inicial e final para os pedidos pendentes
+            DateTime dataInicial = DateTime.Today.AddMonths(-1); // Último mês
+            DateTime dataFinal = DateTime.Today.AddDays(1); // Próximo mês
+        
             var pedidosPendentes = await _context.Pedidos
-                .Where(p => p.ColaboradorId == idCol && p.Situacao == "Pendente")
+                .Where(p => p.ColaboradorId == idCol && p.Situacao == "Pendente" && p.DataPedido >= dataInicial && p.DataPedido < dataFinal)
                 .ToListAsync();
         
             if (pedidosPendentes == null || pedidosPendentes.Count == 0)
@@ -172,7 +176,8 @@ namespace InfobarAPI.Controllers
         
             await _context.SaveChangesAsync();
         
-            return Ok("Pedidos pendentes finalizados com sucesso.");
+            // Retorna uma mensagem indicando que os pedidos foram finalizados com sucesso
+            return Ok(new { Message = "Pedidos pendentes finalizados com sucesso." });
         }
         [HttpGet("CodBarrasConfirma/{codigo}")]
         public async Task<ActionResult> GetProdutosByCodigo(string codigo)
