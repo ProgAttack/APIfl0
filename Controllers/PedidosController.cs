@@ -153,18 +153,16 @@ namespace InfobarAPI.Controllers
 
         // Novo método para finalizar os pedidos pendentes
         [HttpPost("FinalizarPedidos/{idCol}")]
-        public async Task<IActionResult> FinalizarPedidos(int idCol, [FromBody] List<int> pedidoIds)
+        public async Task<IActionResult> FinalizarPedidos(int idCol)
         {
             try
             {
-                // Se necessário, faça validações adicionais nos IDs dos pedidos
-        
                 // Obtém a data inicial e final para os pedidos pendentes
                 DateTime dataInicial = DateTime.Today.AddMonths(-1); // Último mês
                 DateTime dataFinal = DateTime.Today.AddDays(1); // Próximo mês
         
                 var pedidosPendentes = await _context.Pedidos
-                    .Where(p => pedidoIds.Contains(p.IdPed) && p.ColaboradorId == idCol && p.Situacao == "Pendente" && p.DataPedido >= dataInicial && p.DataPedido < dataFinal)
+                    .Where(p => p.ColaboradorId == idCol && p.Situacao == "Pendente" && p.DataPedido >= dataInicial && p.DataPedido < dataFinal)
                     .ToListAsync();
         
                 if (pedidosPendentes == null || pedidosPendentes.Count == 0)
