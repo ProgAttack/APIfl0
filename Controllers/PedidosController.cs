@@ -161,7 +161,6 @@ namespace InfobarAPI.Controllers
                 return StatusCode(500, "Erro interno do servidor");
             }
         }
-        
 
 
         // Novo método para finalizar os pedidos pendentes
