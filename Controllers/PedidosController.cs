@@ -155,33 +155,40 @@ namespace InfobarAPI.Controllers
         [HttpPost("FinalizarPedidos/{idCol}")]
         public async Task<IActionResult> FinalizarPedidos(int idCol)
         {
-            // Obtém a data inicial e final para os pedidos pendentes
-            DateTime dataInicial = DateTime.Today.AddMonths(-1); // Último mês
-            DateTime dataFinal = DateTime.Today.AddDays(1); // Próximo mês
-        
-            var pedidosPendentes = await _context.Pedidos
-                .Where(p => p.ColaboradorId == idCol && p.Situacao == "Pendente" && p.DataPedido >= dataInicial && p.DataPedido < dataFinal)
-                .ToListAsync();
-        
-            if (pedidosPendentes == null || pedidosPendentes.Count == 0)
+            try
             {
-                return NotFound("Nenhum pedido pendente encontrado para o colaborador.");
+                // Obtém a data inicial e final para os pedidos pendentes
+                DateTime dataInicial = DateTime.Today.AddMonths(-1); // Último mês
+                DateTime dataFinal = DateTime.Today.AddDays(1); // Próximo mês
+        
+                var pedidosPendentes = await _context.Pedidos
+                    .Where(p => p.ColaboradorId == idCol && p.Situacao == "Pendente" && p.DataPedido >= dataInicial && p.DataPedido < dataFinal)
+                    .ToListAsync();
+        
+                if (pedidosPendentes == null || pedidosPendentes.Count == 0)
+                {
+                    Console.WriteLine($"Nenhum pedido pendente encontrado para o colaborador com ID {idCol}.");
+                    return NotFound("Nenhum pedido pendente encontrado para o colaborador.");
+                }
+        
+                // Atualiza a situação dos pedidos para "Finalizado"
+                foreach (var pedido in pedidosPendentes)
+                {
+                    pedido.Situacao = "Finalizado";
+                }
+        
+                await _context.SaveChangesAsync();
+        
+                Console.WriteLine($"Pedidos pendentes finalizados com sucesso para o colaborador com ID {idCol}.");
+                return Ok("Pedidos pendentes finalizados com sucesso.");
             }
-        
-            // Obter os IDs dos pedidos finalizados
-            var idsDosPedidosFinalizados = pedidosPendentes.Select(p => p.IdPed).ToList();
-        
-            // Atualiza a situação dos pedidos para "Finalizado"
-            foreach (var pedido in pedidosPendentes)
+            catch (Exception ex)
             {
-                pedido.Situacao = "Finalizado";
+                Console.Error.WriteLine($"Erro ao finalizar pedidos: {ex.Message}");
+                return StatusCode(500, "Erro interno do servidor");
             }
-        
-            await _context.SaveChangesAsync();
-        
-            // Retorna os IDs dos pedidos finalizados
-            return Ok(new { PedidosFinalizados = idsDosPedidosFinalizados });
         }
+
         [HttpGet("CodBarrasConfirma/{codigo}")]
         public async Task<ActionResult> GetProdutosByCodigo(string codigo)
         {
