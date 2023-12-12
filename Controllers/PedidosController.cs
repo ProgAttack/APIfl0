@@ -152,30 +152,26 @@ namespace InfobarAPI.Controllers
 
 
         // Novo método para finalizar os pedidos pendentes
-        HttpPost("FinalizarPedidos/{idCol}")]
+        [HttpPost("FinalizarPedidos/{idCol}")]
         public async Task<IActionResult> FinalizarPedidos(int idCol)
         {
-            // Obtém a data inicial e final para os pedidos pendentes
-            DateTime dataInicial = DateTime.Today.AddMonths(-1); // Último mês
-            DateTime dataFinal = DateTime.Today.AddDays(1); // Próximo mês
-
             var pedidosPendentes = await _context.Pedidos
-                .Where(p => p.ColaboradorId == idCol && p.Situacao == "Pendente" && p.DataPedido >= dataInicial && p.DataPedido < dataFinal)
+                .Where(p => p.ColaboradorId == idCol && p.Situacao == "Pendente")
                 .ToListAsync();
-
+        
             if (pedidosPendentes == null || pedidosPendentes.Count == 0)
             {
                 return NotFound("Nenhum pedido pendente encontrado para o colaborador.");
             }
-
+        
             // Atualiza a situação dos pedidos para "Finalizado"
             foreach (var pedido in pedidosPendentes)
             {
                 pedido.Situacao = "Finalizado";
             }
-
+        
             await _context.SaveChangesAsync();
-
+        
             return Ok("Pedidos pendentes finalizados com sucesso.");
         }
         [HttpGet("CodBarrasConfirma/{codigo}")]
