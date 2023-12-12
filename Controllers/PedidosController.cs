@@ -116,36 +116,50 @@ namespace InfobarAPI.Controllers
 
 
      
-        [HttpGet("ValorTotal/{idCol}")]               
+                      
+       [HttpGet("ValorTotal/{idCol}")]
         public async Task<ActionResult<ResumoColaborador>> GetValor(int idCol)
         {
-            var colaborador = await _context.Colaboradores.FindAsync(idCol);
-        
-            if (colaborador == null)
+            try
             {
-                return NotFound("Colaborador " + idCol + " não encontrado");
+                var colaborador = await _context.Colaboradores.FindAsync(idCol);
+        
+                if (colaborador == null)
+                {
+                    Console.Error.WriteLine($"Colaborador {idCol} não encontrado");
+                    return NotFound($"Colaborador {idCol} não encontrado");
+                }
+        
+                var pedidosPendentes = await _context.Pedidos
+                    .Include(p => p.Produto)
+                    .Where(p => p.ColaboradorId == idCol && p.Situacao == "Pendente")
+                    .ToListAsync();
+        
+                if (pedidosPendentes == null || pedidosPendentes.Count == 0)
+                {
+                    Console.WriteLine("Nenhum pedido pendente encontrado para o colaborador.");
+                    return NotFound("Nenhum pedido pendente encontrado para o colaborador.");
+                }
+        
+                // Soma os valores dos pedidos
+                double valorTotal = pedidosPendentes.Sum(p => p.Produto.Preco);
+        
+                Console.WriteLine($"Valor total para o colaborador {idCol}: {valorTotal}");
+        
+                var resumo = new ResumoColaborador
+                {
+                    Nome = colaborador.Nome,
+                    ValorTotal = valorTotal
+                };
+        
+                return resumo;
             }
-        
-            var pedidosPendentes = await _context.Pedidos
-                .Include(p => p.Produto)
-                .Where(p => p.ColaboradorId == idCol && p.Situacao == "Pendente")
-                .ToListAsync();
-        
-            if (pedidosPendentes == null || pedidosPendentes.Count == 0)
+            catch (Exception ex)
             {
-                return NotFound("Nenhum pedido pendente encontrado para o colaborador.");
+                // Log do erro, você pode personalizar conforme necessário
+                Console.Error.WriteLine($"Erro durante a obtenção do valor total: {ex.Message}");
+                return StatusCode(500, "Erro interno do servidor");
             }
-        
-            // Soma os valores dos pedidos
-            double valorTotal = pedidosPendentes.Sum(p => p.Produto.Preco);
-        
-            var resumo = new ResumoColaborador
-            {
-                Nome = colaborador.Nome,
-                ValorTotal = valorTotal
-            };
-        
-            return resumo;
         }
         
 
