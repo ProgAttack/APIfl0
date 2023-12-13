@@ -37,6 +37,45 @@ namespace InfobarAPI.Controllers
             return colaboradores;
         }
 
+        // GET: api/Colaboradores/ValorTotal
+        [HttpGet("ValorTotal")]
+        public async Task<ActionResult<IEnumerable<ColaboradorComValorTotal>>> GetColaboradoresComValorTotal()
+        {
+            try
+            {
+                var colaboradoresComValorTotal = new List<ColaboradorComValorTotal>();
+        
+                var colaboradores = await _context.Colaboradores.ToListAsync();
+        
+                foreach (var colaborador in colaboradores)
+                {
+                    var pedidosPendentes = await _context.Pedidos
+                        .Include(p => p.Produto)
+                        .Where(p => p.ColaboradorId == colaborador.IdCol && p.Situacao == "Pendente")
+                        .ToListAsync();
+        
+                    double valorTotal = pedidosPendentes.Sum(p => p.Produto.Preco);
+        
+                    colaboradoresComValorTotal.Add(new ColaboradorComValorTotal
+                    {
+                        IdCol = colaborador.IdCol,
+                        Nome = colaborador.Nome,
+                        ValorTotal = valorTotal
+                    });
+                }
+        
+                return colaboradoresComValorTotal;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Erro durante a obtenção de colaboradores com valor total: {ex.Message}");
+                return StatusCode(500, "Erro interno do servidor");
+            }
+        }
+
+
+
+
         // GET: api/Colaboradores/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Colaborador>> GetColaborador(int id)
