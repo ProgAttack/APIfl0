@@ -38,7 +38,8 @@ namespace InfobarAPI.Controllers
         }
 
 
-        [HttpPost("FinalizarPedidosTodos")]
+        
+       [HttpPost("FinalizarPedidosTodos")]
         public async Task<IActionResult> FinalizarPedidosTodos()
         {
             try
