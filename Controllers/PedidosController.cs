@@ -116,40 +116,40 @@ namespace InfobarAPI.Controllers
 
 
      
-      [HttpGet("ValorTotal")]
-        public async Task<ActionResult<IEnumerable<ResumoColaborador>>> GetValorTotal()
+    [HttpGet("ValorTotal")]
+        public async Task<ActionResult<IEnumerable<ColaboradorComValorTotal>>> GetColaboradoresComValorTotal()
         {
             try
             {
+                var colaboradoresComValorTotal = new List<ColaboradorComValorTotal>();
+        
                 var colaboradores = await _context.Colaboradores.ToListAsync();
         
-                var resumoColaboradores = colaboradores.Select(colaborador =>
+                foreach (var colaborador in colaboradores)
                 {
-                    var pedidosPendentes = _context.Pedidos
+                    var pedidosPendentes = await _context.Pedidos
                         .Include(p => p.Produto)
-                        .Where(p => p.ColaboradorId == colaborador.Id && p.Situacao == "Pendente")
-                        .ToList();
+                        .Where(p => p.ColaboradorId == colaborador.IdCol && p.Situacao == "Pendente")
+                        .ToListAsync();
         
                     double valorTotal = pedidosPendentes.Sum(p => p.Produto.Preco);
         
-                    return new ResumoColaborador
+                    colaboradoresComValorTotal.Add(new ColaboradorComValorTotal
                     {
-                        IdCol = colaborador.Id,
+                        IdCol = colaborador.IdCol,
                         Nome = colaborador.Nome,
-                        ValorTotal = colaborador.valorTotal
-                    };
-                }).ToList();
+                        ValorTotal = valorTotal
+                    });
+                }
         
-                return resumoColaboradores;
+                return colaboradoresComValorTotal;
             }
             catch (Exception ex)
             {
-                // Log do erro, você pode personalizar conforme necessário
-                Console.Error.WriteLine($"Erro durante a obtenção do valor total: {ex.Message}");
+                Console.Error.WriteLine($"Erro durante a obtenção de colaboradores com valor total: {ex.Message}");
                 return StatusCode(500, "Erro interno do servidor");
             }
         }
-
 
         // Novo método para finalizar os pedidos pendentes
        [HttpPost("FinalizarPedidos/{idCol}")]
