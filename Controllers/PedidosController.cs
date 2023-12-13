@@ -117,42 +117,31 @@ namespace InfobarAPI.Controllers
 
      
                       
-       [HttpGet("ValorTotal/{idCol}")]
-        public async Task<ActionResult<ResumoColaborador>> GetValor(int idCol)
+      [HttpGet("ValorTotal")]
+        public async Task<ActionResult<IEnumerable<ResumoColaborador>>> GetValorTotal()
         {
             try
             {
-                var colaborador = await _context.Colaboradores.FindAsync(idCol);
+                var colaboradores = await _context.Colaboradores.ToListAsync();
         
-                if (colaborador == null)
+                var resumoColaboradores = colaboradores.Select(colaborador =>
                 {
-                    Console.Error.WriteLine($"Colaborador {idCol} não encontrado");
-                    return NotFound($"Colaborador {idCol} não encontrado");
-                }
+                    var pedidosPendentes = _context.Pedidos
+                        .Include(p => p.Produto)
+                        .Where(p => p.ColaboradorId == colaborador.Id && p.Situacao == "Pendente")
+                        .ToList();
         
-                var pedidosPendentes = await _context.Pedidos
-                    .Include(p => p.Produto)
-                    .Where(p => p.ColaboradorId == idCol && p.Situacao == "Pendente")
-                    .ToListAsync();
+                    double valorTotal = pedidosPendentes.Sum(p => p.Produto.Preco);
         
-                if (pedidosPendentes == null || pedidosPendentes.Count == 0)
-                {
-                    Console.WriteLine("Nenhum pedido pendente encontrado para o colaborador.");
-                    return NotFound("Nenhum pedido pendente encontrado para o colaborador.");
-                }
+                    return new ResumoColaborador
+                    {
+                        IdCol = colaborador.Id,
+                        Nome = colaborador.Nome,
+                        ValorTotal = valorTotal
+                    };
+                }).ToList();
         
-                // Soma os valores dos pedidos
-                double valorTotal = pedidosPendentes.Sum(p => p.Produto.Preco);
-        
-                Console.WriteLine($"Valor total para o colaborador {idCol}: {valorTotal}");
-        
-                var resumo = new ResumoColaborador
-                {
-                    Nome = colaborador.Nome,
-                    ValorTotal = valorTotal
-                };
-        
-                return resumo;
+                return resumoColaboradores;
             }
             catch (Exception ex)
             {
