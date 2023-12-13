@@ -136,7 +136,7 @@ namespace InfobarAPI.Controllers
                     {
                         IdCol = colaborador.Id,
                         Nome = colaborador.Nome,
-                        ValorTotal = valorTotal
+                        ValorTotal = colaborador.valorTotal
                     };
                 }).ToList();
         
