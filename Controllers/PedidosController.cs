@@ -116,7 +116,6 @@ namespace InfobarAPI.Controllers
 
 
      
-                      
       [HttpGet("ValorTotal")]
         public async Task<ActionResult<IEnumerable<ResumoColaborador>>> GetValorTotal()
         {
