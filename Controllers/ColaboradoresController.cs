@@ -246,40 +246,40 @@ namespace InfobarAPI.Controllers
         {
             try
             {
-                // Obtém todos os colaboradores
-                var colaboradores = await _context.Colaboradores.ToListAsync();
+                var todosOsColaboradores = await _context.Colaboradores.ToListAsync();
         
-                // Itera sobre cada colaborador
-                foreach (var colaborador in colaboradores)
+                if (todosOsColaboradores == null || todosOsColaboradores.Count == 0)
                 {
-                    // Obtém todos os pedidos pendentes do colaborador
+                    return NotFound("Nenhum colaborador encontrado.");
+                }
+        
+                foreach (var colaborador in todosOsColaboradores)
+                {
                     var pedidosPendentes = await _context.Pedidos
-                        .Include(p => p.Produto)
                         .Where(p => p.ColaboradorId == colaborador.IdCol && p.Situacao == "Pendente")
                         .ToListAsync();
         
-                    // Atualiza o status dos pedidos para finalizado
-                    foreach (var pedido in pedidosPendentes)
+                    if (pedidosPendentes != null && pedidosPendentes.Count > 0)
                     {
-                        pedido.Situacao = "Finalizado";
+                        // Atualiza a situação dos pedidos para "Finalizado"
+                        foreach (var pedido in pedidosPendentes)
+                        {
+                            pedido.Situacao = "Finalizado";
+                        }
                     }
-        
-                    // Atualiza o valor total do colaborador para zero
-                    colaborador.ValorTotal = 0;
                 }
         
-                // Salva as alterações no banco de dados
                 await _context.SaveChangesAsync();
         
-                return Ok("Pedidos finalizados com sucesso!");
+                return Ok("Todos os pedidos pendentes finalizados com sucesso.");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Erro ao finalizar pedidos: {ex.Message}");
+                Console.Error.WriteLine($"Erro ao finalizar todos os pedidos: {ex.Message}");
                 return StatusCode(500, "Erro interno do servidor");
             }
         }
-        
+                
         [HttpDelete("DeleteCol/{id}")]
         public async Task<IActionResult> DeleteColaborador(int id)
         {
