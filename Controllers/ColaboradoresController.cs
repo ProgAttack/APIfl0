@@ -37,6 +37,46 @@ namespace InfobarAPI.Controllers
             return colaboradores;
         }
 
+
+        [HttpPost("FinalizarPedidosTodos")]
+        public async Task<IActionResult> FinalizarPedidosTodos()
+        {
+            try
+            {
+                // Obtém todos os colaboradores
+                var colaboradores = await _context.Colaboradores.ToListAsync();
+        
+                // Itera sobre cada colaborador
+                foreach (var colaborador in colaboradores)
+                {
+                    // Obtém todos os pedidos pendentes do colaborador
+                    var pedidosPendentes = await _context.Pedidos
+                        .Include(p => p.Produto)
+                        .Where(p => p.ColaboradorId == colaborador.IdCol && p.Situacao == "Pendente")
+                        .ToListAsync();
+        
+                    // Atualiza o status dos pedidos para finalizado
+                    foreach (var pedido in pedidosPendentes)
+                    {
+                        pedido.Situacao = "Finalizado";
+                    }
+        
+                    // Atualiza o valor total do colaborador para zero
+                    colaborador.ValorTotal = 0;
+                }
+        
+                // Salva as alterações no banco de dados
+                await _context.SaveChangesAsync();
+        
+                return Ok("Pedidos finalizados com sucesso!");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Erro ao finalizar pedidos: {ex.Message}");
+                return StatusCode(500, "Erro interno do servidor");
+            }
+        }
+
         // GET: api/Colaboradores/ValorTotal
         [HttpGet("ValorTotal")]
         public async Task<ActionResult<IEnumerable<ColaboradorComValorTotal>>> GetColaboradoresComValorTotal()
